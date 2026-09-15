@@ -1,4 +1,5 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, type MouseEvent } from 'react';
+import { Play, Volume2, VolumeX, AlertCircle, RotateCcw } from 'lucide-react';
 
 interface HeroSectionProps {
   onCtaClick: () => void;
@@ -7,35 +8,84 @@ interface HeroSectionProps {
 export default function HeroSection({ onCtaClick }: HeroSectionProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // IntersectionObserver: automatically pause video when out of viewport to save mobile CPU/battery
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleError = () => setHasError(true);
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+    video.addEventListener('error', handleError);
+
+    // Tentativa suave de autoplay mudo (100% suportado pelos navegadores)
+    video.play().then(() => {
+      setIsPlaying(true);
+    }).catch(() => {
+      setIsPlaying(false);
+    });
+
+    // Pausar vídeo ao rolar para fora da tela (economiza CPU/bateria em mobile)
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            video.play().catch(() => {
-              /* Autoplay handled gracefully */
-            });
+            video.play().catch(() => {});
           } else {
             video.pause();
           }
         });
       },
-      { threshold: 0.25 }
+      { threshold: 0.2 }
     );
 
     observer.observe(video);
-    return () => observer.disconnect();
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+      video.removeEventListener('error', handleError);
+      observer.disconnect();
+    };
   }, []);
 
-  const toggleMute = () => {
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      // Ao tocar para dar play, ativa o áudio
+      video.muted = false;
+      setIsMuted(false);
+      video.play().then(() => setIsPlaying(true)).catch(() => {
+        video.muted = true;
+        setIsMuted(true);
+        video.play();
+      });
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const toggleMute = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(videoRef.current.muted);
+    }
+  };
+
+  const retryVideo = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setHasError(false);
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {});
     }
   };
 
@@ -51,13 +101,14 @@ export default function HeroSection({ onCtaClick }: HeroSectionProps) {
         comunidade católica que fatura com <span className="italic text-[#c9a84c]">fé</span>
       </h1>
 
-      <div className="flex justify-center mb-8 md:mb-10">
-        <div className="relative w-full max-w-[320px] sm:max-w-[340px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl shadow-black border border-[#c9a84c]/30 bg-[#1a1a1a]">
+      <div className="flex flex-col items-center justify-center mb-8 md:mb-10">
+        {/* Container do Vídeo */}
+        <div className="relative w-full max-w-[320px] sm:max-w-[340px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl shadow-black border border-[#c9a84c]/30 bg-[#1a1a1a] group">
           <video
             ref={videoRef}
             poster="/images/video-poster.webp"
-            className="w-full h-full object-cover"
-            controls
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={togglePlay}
             autoPlay
             muted
             playsInline
@@ -71,21 +122,51 @@ export default function HeroSection({ onCtaClick }: HeroSectionProps) {
             Seu navegador não suporta a reprodução de vídeo.
           </video>
 
-          {/* Quick Audio Unmute Badge for Mobile */}
+          {/* Botão Play Central quando Pausado */}
+          {!isPlaying && !hasError && (
+            <button
+              type="button"
+              onClick={togglePlay}
+              aria-label="Dar Play no Vídeo"
+              className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-[#c9a84c]/90 hover:bg-[#f0d78c] text-[#0d0d0d] flex items-center justify-center shadow-2xl transition-transform transform active:scale-90 z-20 cursor-pointer"
+            >
+              <Play className="w-8 h-8 fill-current ml-1" />
+            </button>
+          )}
+
+          {/* Fallback de Erro de Vídeo no Navegador */}
+          {hasError && (
+            <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 text-center z-25">
+              <AlertCircle className="w-10 h-10 text-[#c9a84c] mb-3" />
+              <p className="text-white font-medium text-sm mb-4">
+                Ocorreu uma instabilidade ao reproduzir o vídeo.
+              </p>
+              <button
+                type="button"
+                onClick={retryVideo}
+                className="bg-[#c9a84c] hover:bg-[#f0d78c] text-[#0d0d0d] font-bold text-xs py-2.5 px-4 rounded-lg flex items-center gap-2 shadow-lg cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Tentar Novamente</span>
+              </button>
+            </div>
+          )}
+
+          {/* Controle Rápido de Áudio */}
           <button
             type="button"
             onClick={toggleMute}
-            className="absolute bottom-3 right-3 bg-black/75 hover:bg-black/90 text-white text-xs px-3 py-1.5 rounded-lg border border-[#c9a84c]/30 backdrop-blur-sm flex items-center gap-1.5 cursor-pointer z-10 transition-colors"
+            className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs px-3 py-1.5 rounded-lg border border-[#c9a84c]/30 backdrop-blur-sm flex items-center gap-1.5 cursor-pointer z-20 transition-colors"
             title={isMuted ? 'Ativar Som' : 'Silenciar'}
           >
             {isMuted ? (
               <>
-                <span>🔇</span>
+                <VolumeX className="w-4 h-4 text-[#f0d78c]" />
                 <span className="text-[11px] text-[#f0d78c] font-medium">Toque p/ som</span>
               </>
             ) : (
               <>
-                <span>🔊</span>
+                <Volume2 className="w-4 h-4 text-green-400" />
                 <span className="text-[11px] text-white">Com áudio</span>
               </>
             )}
