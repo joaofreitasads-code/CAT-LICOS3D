@@ -1,8 +1,5 @@
 import { BenefitItem, GuideItem, FaqItem, LampItem } from './types';
 
-// Link do vídeo da VSL no YouTube
-export const YOUTUBE_VSL_URL = 'https://www.youtube.com';
-
 export const CHECKOUT_URLS = {
   completo: 'https://ggcheckout.app/checkout/v5/x3T5ba1HxOeEdm1n0cvg', // R$ 37,90
   upgrade18: 'https://ggcheckout.app/checkout/v5/kWxnkS0LLaFsvuEeggTw', // R$ 18,90
