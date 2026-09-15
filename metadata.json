@@ -1,0 +1,6 @@
+{
+  "name": "+500 Arquivos STL Católicos",
+  "description": "Mais de 500 arquivos STL católicos testados e otimizados para impressão 3D. Mega Pack para impressão 3D de arte sacra.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

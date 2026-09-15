@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-noir: #0d0d0d;
+  --color-noir-2: #1a1a1a;
+  --color-noir-3: #242424;
+  --color-gold: #c9a84c;
+  --color-gold-light: #f0d78c;
+
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-serif: "Libre Baskerville", Georgia, serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background-color: #0d0d0d;
+  color: #e5e7eb;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Libre Baskerville", Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+@keyframes marqueeLeft {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marqueeRight {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  animation: marqueeLeft 42s linear infinite !important;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  animation: marqueeRight 42s linear infinite !important;
+}
+
+/* Off-screen rendering optimization for mobile devices */
+section:not(#hero):not(#colecao):not(#bonus-luminarias):not(#premium) {
+  content-visibility: auto;
+  contain-intrinsic-size: 800px;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
