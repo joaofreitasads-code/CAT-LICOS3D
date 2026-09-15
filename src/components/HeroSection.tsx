@@ -106,7 +106,7 @@ export default function HeroSection({ onCtaClick }: HeroSectionProps) {
         <div className="relative w-full max-w-[320px] sm:max-w-[340px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl shadow-black border border-[#c9a84c]/30 bg-[#1a1a1a] group">
           <video
             ref={videoRef}
-            poster="/images/video-poster.webp"
+            poster="/images/vsl-poster.webp"
             className="w-full h-full object-cover cursor-pointer"
             onClick={togglePlay}
             autoPlay
@@ -117,8 +117,8 @@ export default function HeroSection({ onCtaClick }: HeroSectionProps) {
             width={480}
             height={854}
           >
-            <source src="/videos/video-sacro-fast.mp4" type="video/mp4" />
-            <source src="/videos/video-sacro-vertical.mp4" type="video/mp4" />
+            <source src="https://i.imgur.com/dD3JkuZ.mp4" type="video/mp4" />
+            <source src="/videos/vsl-catolica.mp4" type="video/mp4" />
             Seu navegador não suporta a reprodução de vídeo.
           </video>
 
